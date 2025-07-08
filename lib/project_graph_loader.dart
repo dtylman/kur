@@ -23,7 +23,7 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
   Graph graph = Graph();
   var scanned = 0; // Number of issues scanned
   var total = 0; // Total number of issues to scan
-  String status = 'Loading...';
+  String issueScanned = 'Loading...'; // Current issue being scanned
   final Set<String> visited = <String>{};
 
   @override
@@ -36,16 +36,57 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
   @override
   Widget build(BuildContext context) {
     double progress = total > 0 ? scanned / total : 0.0;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(status),
-        const SizedBox(height: 20),
-        LinearProgressIndicator(
-          semanticsLabel: 'Graph loading progress',
-          value: progress,
+    return Center(
+      child: FractionallySizedBox(
+        widthFactor: 0.9,
+        child: Card(
+          elevation: 6,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.sync, color: Theme.of(context).colorScheme.primary, size: 36),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            issueScanned,
+                            style: Theme.of(context).textTheme.titleMedium,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Scanned: $scanned / $total',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[700]),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                LinearProgressIndicator(
+                  semanticsLabel: 'Graph loading progress',
+                  value: progress,
+                  minHeight: 10,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ],
+            ),
+          ),
         ),
-      ],
+      ),
     );
   }
 
@@ -114,7 +155,7 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
     //await addLinks(issue.inLinks, node, true);
 
     setState(() {
-      status = 'Searching for related issues: ${issue!.key}: ${issue.summary}...';
+      issueScanned = '${issue!.key}: ${issue.summary}';
     });
 
     return node;
