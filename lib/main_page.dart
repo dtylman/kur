@@ -97,7 +97,7 @@ class MainPageState extends State<MainPage> {
     setState(() {
       _selectedProject = project;
     });
-    Navigator.of(context).pop(); // Close the dialog
+    Navigator.of(context).pop(); 
   }
 
   void onDeleteProject(Project project) async {

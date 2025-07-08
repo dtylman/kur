@@ -23,14 +23,14 @@ class ProjectViewState extends State<ProjectView> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(
-      'Building ProjectView for project: ${project?.name ?? 'Unknown'}',
-    );
+    if (project == null) {
+      return Text('Project ${widget.projectID} not found');
+    }
     return Row(
       children: [
         // Left pane
         Container(
-          width: 300,
+          width: 250,
           color: Colors.grey[200],
           child: Column(
             children: [

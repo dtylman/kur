@@ -28,8 +28,24 @@ class ProjectGraphState extends State<ProjectGraph> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.project.issues.isEmpty) {
+      return const Center(
+        child: Text(
+          'No issues found in this project',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
     if (!loaded) {
       return Center(child: graphLoader);
+    }
+    if (graph == null || issues.isEmpty) {
+      return const Center(
+        child: Text(
+          'Graph is empty',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
     }
     return Container(
       color: Colors.white,

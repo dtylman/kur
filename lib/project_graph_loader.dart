@@ -33,7 +33,6 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -49,15 +48,16 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
 
   void buildGraph() async {
     debugPrint('Building graph for project: ${widget.project.name}');
-
-    for (var key in widget.project.issues) {
-      await addIssue(key);
-      setState(() {
-        progress = (issues.length / widget.project.issues.length);
-      });
+    try {
+      for (var key in widget.project.issues) {
+        await addIssue(key);
+        setState(() {
+          progress = (issues.length / widget.project.issues.length);
+        });
+      }
+    } finally {
+      widget.onLoaded(issues, graph);
     }
-
-    widget.onLoaded(issues, graph);
   }
 
   Future<void> addOutLinks(
