@@ -8,8 +8,9 @@ import 'package:kur/project_graph_loader.dart';
 
 class ProjectGraph extends StatefulWidget {
   final Project project;
+  final String? selectedIssueKey;
 
-  const ProjectGraph({super.key, required this.project});
+  const ProjectGraph({super.key, required this.project, this.selectedIssueKey});
 
   @override
   State<ProjectGraph> createState() => ProjectGraphState();
@@ -175,7 +176,8 @@ class ProjectGraphState extends State<ProjectGraph> {
       );
     }
     JiraIssue? issue = filteredIssues[issueID];
-    return JiraIssueCard(issue: issue!);
+    final isSelected = widget.selectedIssueKey == issueID;
+    return JiraIssueCard(issue: issue!, isSelected: isSelected);
   }
 
   void onGraphLoaded(Map<String, JiraIssue> issues, Graph graph) {

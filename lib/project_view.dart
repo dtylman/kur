@@ -14,6 +14,7 @@ class ProjectView extends StatefulWidget {
 
 class ProjectViewState extends State<ProjectView> {
   Project? project;
+  String? selectedIssueKey;
 
   @override
   void initState() {
@@ -54,7 +55,11 @@ class ProjectViewState extends State<ProjectView> {
         ),
         // Main panel
         Expanded(
-          child: ProjectGraph(key: ValueKey(project!.id), project: project!),
+          child: ProjectGraph(
+            key: ValueKey(project!.id),
+            project: project!,
+            selectedIssueKey: selectedIssueKey,
+          ),
         ),
       ],
     );
@@ -104,8 +109,9 @@ class ProjectViewState extends State<ProjectView> {
   }
 
   void onIssueSelected(String value) {
-    // Handle issue selection if needed
-    // For example, you could navigate to an issue details page or show a dialog
+    setState(() {
+      selectedIssueKey = value;
+    });
     debugPrint('Issue selected: $value');
   }
 }

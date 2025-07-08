@@ -4,18 +4,26 @@ import 'package:kur/jira_service.dart';
 
 class JiraIssueCard extends StatelessWidget {
   final JiraIssue issue;
+  final bool isSelected;
 
-  const JiraIssueCard({super.key, required this.issue});
+  const JiraIssueCard({super.key, required this.issue, this.isSelected = false});
 
   @override
   Widget build(BuildContext context) {
     var backgroundColor = getColorForType(issue.type);
-    
+    if (isSelected) {
+      backgroundColor = Colors.amberAccent.shade100;
+    }
     return SizedBox(
       width: 300,
       child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: isSelected ? 8 : 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: isSelected
+              ? const BorderSide(color: Colors.orange, width: 3)
+              : BorderSide.none,
+        ),
         color: backgroundColor,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
