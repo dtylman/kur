@@ -20,7 +20,7 @@ class JiraIssue {
 
   List<String> labels = [];
 
-  Map<String, JiraIssueLink> inLink = {}; // key -> JiraIssueLink
+  Map<String, JiraIssueLink> inLinks = {}; // key -> JiraIssueLink
   Map<String, JiraIssueLink> outLinks = {}; // key -> JiraIssueLink
 
   JiraIssue({required this.id, required this.key});
@@ -84,6 +84,6 @@ class JiraIssue {
   }
 
   void addInLink(JiraIssueLink jiraIssueLink) {
-    inLink[jiraIssueLink.key] = jiraIssueLink;
+    inLinks[jiraIssueLink.key] = jiraIssueLink;
   }
 }
