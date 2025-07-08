@@ -21,7 +21,8 @@ class ProjectGraphLoader extends StatefulWidget {
 class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
   Map<String, JiraIssue> issues = {};
   Graph graph = Graph();
-  var progress = 0.0;
+  var scanned = 0; // Number of issues scanned
+  var total = 0; // Total number of issues to scan
   String status = 'Loading...';
   final Set<String> visited = <String>{};
 
@@ -34,6 +35,7 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
 
   @override
   Widget build(BuildContext context) {
+    double progress = total > 0 ? scanned / total : 0.0;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -50,11 +52,17 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
   void buildGraph() async {
     debugPrint('Building graph for project: ${widget.project.name}');
     visited.clear();
+    setState(() {
+      scanned = 0;    
+      total = widget.project.issues.length;
+    });
+    
     try {
+
       for (var key in widget.project.issues) {
         await addIssue(key);
         setState(() {
-          progress = (issues.length / widget.project.issues.length);
+          scanned++;      
         });
       }
     } finally {
@@ -66,9 +74,10 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
     Map<String, JiraIssueLink> links,
     Node node,
     bool inbound,
-  ) async {
-    var current = 0;
-
+  ) async {    
+    setState(() {
+      total += links.length;      
+    });
     for (var link in links.values) {
       Node childeNode = await addIssue(link.key);
       MaterialColor color = getLinkColor(link.name);
@@ -79,12 +88,8 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
         graph.addEdge(node, childeNode, paint: Paint()..color = color);
       }
 
-      debugPrint(
-        'Added link from ${node.key?.value} to ${childeNode.key?.value} with color $color',
-      );
-
       setState(() {
-        progress = current / links.length;
+        scanned++;
       });
     }
   }
@@ -109,7 +114,7 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
     //await addLinks(issue.inLinks, node, true);
 
     setState(() {
-      status = 'Reading issue: ${issue!.key}: ${issue.summary}';
+      status = 'Searching for related issues: ${issue!.key}: ${issue.summary}...';
     });
 
     return node;

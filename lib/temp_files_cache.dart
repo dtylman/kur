@@ -55,6 +55,16 @@ class TempFilesCache{
     debugPrint('wrote file to cache: $key');        
   }
 
+  Future<void> remove(String key) async {
+    final File file = await getFilePath(key);
+    if (await file.exists()) {
+      await file.delete();
+      debugPrint('Removed file from cache: $key');
+    } else {
+      debugPrint('File not found in cache for removal: $key');
+    }
+  }
+
   void clear() async{
     debugPrint('Clearing cache for $name');
     final String cachePath = await getCacheDirectory();
@@ -65,11 +75,6 @@ class TempFilesCache{
     } 
   }
 
-  void test() async{
-    var folder=  await getCacheDirectory();
-    print('Cache directory: $folder');
-  }
-  
   Future<File> getFilePath(String key) async {
     final String cachePath = await getCacheDirectory();
     final String encodedKey = Uri.encodeComponent(key.toString());

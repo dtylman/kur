@@ -3,6 +3,7 @@ import 'package:graphview/GraphView.dart';
 import 'package:kur/config_service.dart';
 import 'package:kur/jira_issue.dart';
 import 'package:kur/jira_issue_card.dart';
+import 'package:kur/jira_service.dart';
 import 'package:kur/project_graph_loader.dart';
 
 class ProjectGraph extends StatefulWidget {
@@ -36,7 +37,7 @@ class ProjectGraphState extends State<ProjectGraph> {
   Map<String, JiraIssue> get filteredIssues {
     if (showClosed) return issues;
     return Map.fromEntries(
-      issues.entries.where((e) => e.value.status != 'Closed'),
+      issues.entries.where((e) => e.value.status?.toLowerCase() != 'closed'),
     );
   }
 
@@ -62,6 +63,14 @@ class ProjectGraphState extends State<ProjectGraph> {
     return filtered;
   }
 
+  void onRefreshPressed() async {
+    await jiraService.clearCachedItems(issues.values);
+    setState(() {
+      loaded = false;
+    });
+    graphLoader = ProjectGraphLoader(project: widget.project, onLoaded: onGraphLoaded);
+  }
+
   @override
   Widget build(BuildContext context) {
     // Top panel with filter and actions
@@ -74,6 +83,11 @@ class ProjectGraphState extends State<ProjectGraph> {
             onChanged: onShowClosedChanged,
           ),
           const Text('Show closed'),
+          const SizedBox(width: 16),
+          ElevatedButton(
+            onPressed: onRefreshPressed,
+            child: const Text('Refresh'),
+          ),
           // ...add more actions here if needed...
         ],
       ),

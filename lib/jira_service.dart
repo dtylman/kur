@@ -123,6 +123,16 @@ class JiraService {
       Process.run('xdg-open', [url]);
     }
   }
+
+  Future<void> clearCachedItems(Iterable<JiraIssue> values) async {
+    debugPrint('Clearing cached items for issues: ${values.map((e) => e.key).join(', ')}');
+    for (var issue in values) {
+      await issueBeanCache.remove(issue.key);
+      debugPrint('Removed issue bean from cache: ${issue.key}');
+    }
+    // await searchResultsCache.clear();
+    // debugPrint('Cleared search results cache');
+  }
 }
 
 JiraService jiraService = JiraService();

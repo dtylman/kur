@@ -12,7 +12,7 @@ class JiraIssueCard extends StatelessWidget {
     var backgroundColor = getColorForType(issue.type);
     
     return SizedBox(
-      width: 280,
+      width: 300,
       child: Card(
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
