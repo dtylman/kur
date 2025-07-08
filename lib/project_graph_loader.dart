@@ -124,9 +124,9 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
       MaterialColor color = getLinkColor(link.name);
 
       if (inbound) {
-        graph.addEdge(childeNode, node, paint: Paint()..color = color);
-      } else {
         graph.addEdge(node, childeNode, paint: Paint()..color = color);
+      } else {        
+        graph.addEdge(childeNode, node, paint: Paint()..color = color);
       }
 
       setState(() {
