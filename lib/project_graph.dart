@@ -21,8 +21,7 @@ class ProjectGraphState extends State<ProjectGraph> {
   Map<String, JiraIssue> issues = {};
   Graph? graph;
   bool loaded = false;
-  bool showClosed = true;
-  final TransformationController transformationController = TransformationController();
+  bool showClosed = true;  
   final TextEditingController filterController = TextEditingController();
   String? filterText;
   String? highlightedIssueKey;
@@ -163,9 +162,8 @@ class ProjectGraphState extends State<ProjectGraph> {
             child: InteractiveViewer(
               constrained: false,
               boundaryMargin: const EdgeInsets.all(100),
-              minScale: 0.01,
-              maxScale: 5.0,
-              transformationController: transformationController,
+              minScale: 0.5,
+              maxScale: 2.0,              
               child: GraphView(
                 graph: filteredGraph!,
                 algorithm: SugiyamaAlgorithm(
@@ -234,58 +232,7 @@ class ProjectGraphState extends State<ProjectGraph> {
       loaded = true;
       debugPrint('Graph loaded with ${issues.length} issues and ${graph.nodes.length} nodes');
     });
-    // Fit graph to view after loading
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      fitGraphToView();
-    });
+   
   }
 
-  void fitGraphToView() {
-    // Try to fit the graph to the available viewport by computing the bounding box of all nodes
-    if (filteredGraph == null || filteredGraph!.nodes.isEmpty) {
-      transformationController.value = Matrix4.identity();
-      return;
-    }
-
-    // Find the bounding box of all node positions
-    double? minX, minY, maxX, maxY;
-    for (final node in filteredGraph!.nodes) {
-      final pos = node.position;
-      minX = minX == null ? pos.dx : (pos.dx < minX ? pos.dx : minX);
-      minY = minY == null ? pos.dy : (pos.dy < minY ? pos.dy : minY);
-      maxX = maxX == null ? pos.dx : (pos.dx > maxX ? pos.dx : maxX);
-      maxY = maxY == null ? pos.dy : (pos.dy > maxY ? pos.dy : maxY);
-    }
-    if (minX == null || minY == null || maxX == null || maxY == null) {
-      transformationController.value = Matrix4.identity();
-      return;
-    }
-
-    // Padding around the graph
-    const double padding = 40.0;
-    final graphWidth = (maxX - minX) + padding * 2;
-    final graphHeight = (maxY - minY) + padding * 2;
-
-    // Get the size of the InteractiveViewer by using the context
-    final renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox == null || !renderBox.hasSize) {
-      transformationController.value = Matrix4.identity();
-      return;
-    }
-    final Size viewportSize = renderBox.size;
-
-    // Compute scale to fit graph into viewport
-    final double scaleX = viewportSize.width / graphWidth;
-    final double scaleY = viewportSize.height / graphHeight;
-    final double scale = scaleX < scaleY ? scaleX : scaleY;
-
-    // Center the graph in the viewport
-    final double translateX = -minX + padding + (viewportSize.width / scale - graphWidth) / 2;
-    final double translateY = -minY + padding + (viewportSize.height / scale - graphHeight) / 2;
-
-    transformationController.value = Matrix4.identity()
-      ..scale(scale, scale)
-      ..translate(translateX, translateY);
-  }
-    
 }
