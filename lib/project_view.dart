@@ -37,15 +37,8 @@ class ProjectViewState extends State<ProjectView> {
               Expanded(
                 child: ProjectsIssuesList(
                   issues: project!.issues,
-                  onIssueSelected: (issue) {
-                    // Handle issue selection
-                  },
-                  onIssueDeleted: (issue) {
-                    setState(() {
-                      project!.issues.remove(issue);
-                      config.saveProject(project!);
-                    });
-                  },
+                  onIssueSelected: onIssueSelected,
+                  onIssueDeleted: onIssueDeleted,
                 ),
               ),
               Padding(
@@ -89,7 +82,7 @@ class ProjectViewState extends State<ProjectView> {
                 final text = controller.text.trim();
                 if (text.isNotEmpty) {
                   setState(() {
-                    project!.issues.add(text);                    
+                    project!.issues.add(text);
                   });
                   config.saveProject(project!);
                 }
@@ -101,5 +94,18 @@ class ProjectViewState extends State<ProjectView> {
         );
       },
     );
+  }
+
+  void onIssueDeleted(String value) {
+    setState(() {
+      project!.issues.remove(value);
+      config.saveProject(project!);
+    });
+  }
+
+  void onIssueSelected(String value) {
+    // Handle issue selection if needed
+    // For example, you could navigate to an issue details page or show a dialog
+    debugPrint('Issue selected: $value');
   }
 }

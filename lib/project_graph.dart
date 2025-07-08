@@ -202,7 +202,6 @@ class ProjectGraphState extends State<ProjectGraph> {
     double? minX, minY, maxX, maxY;
     for (final node in filteredGraph!.nodes) {
       final pos = node.position;
-      if (pos == null) continue;
       minX = minX == null ? pos.dx : (pos.dx < minX ? pos.dx : minX);
       minY = minY == null ? pos.dy : (pos.dy < minY ? pos.dy : minY);
       maxX = maxX == null ? pos.dx : (pos.dx > maxX ? pos.dx : maxX);
