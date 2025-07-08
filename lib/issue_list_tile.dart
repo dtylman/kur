@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kur/jira_issue.dart';
 import 'package:kur/jira_service.dart';
 
 class IssueListTile extends StatefulWidget {

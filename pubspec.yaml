@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   atlassian_apis: ^0.15.0
   graphview: ^1.2.0  
-  lru_cache: ^0.0.2
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:

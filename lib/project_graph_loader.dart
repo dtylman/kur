@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart';
 import 'package:kur/config_service.dart';
+import 'package:kur/jira_issue.dart';
 import 'package:kur/jira_service.dart';
 
 class ProjectGraphLoader extends StatefulWidget {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kur/config_service.dart';
 import 'package:kur/main_page.dart';
 
-void main() async {
+void main() async {  
   await config.initialize();
   runApp(const MyApp());
 }

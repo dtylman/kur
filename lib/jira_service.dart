@@ -3,125 +3,14 @@ import 'dart:io';
 import 'package:atlassian_apis/jira_platform.dart';
 import 'package:flutter/material.dart';
 import 'package:kur/config_service.dart';
-import 'package:lru_cache/lru_cache.dart';
-
-class JiraIssueLink {
-  final String id;
-  final String name;
-  final String key;
-  JiraIssueLink({required this.id, required this.name, required this.key});
-}
-
-class JiraIssue {
-  final String id;
-  final String key;
-
-  String? summary;
-  String? assignee;
-  String? parent;
-  String? type;
-  String? status;
-  String? reporter;
-
-  List<String> labels = [];
-
-  Map<String, JiraIssueLink> inLink = {}; // key -> JiraIssueLink
-  Map<String, JiraIssueLink> outLinks = {}; // key -> JiraIssueLink
-
-  JiraIssue({required this.id, required this.key});
-
-  static JiraIssue fromBean(IssueBean issue) {
-    var jiraIssue = JiraIssue(id: issue.id ?? '', key: issue.key ?? '');
-    jiraIssue.summary = issue.fields?['summary'] as String?;
-    jiraIssue.assignee = issue.fields?['assignee']?['displayName'] as String?;
-    jiraIssue.parent = issue.fields?['parent']?['key'] as String?;
-    jiraIssue.type = issue.fields?['issuetype']?['name'] as String?;
-    jiraIssue.status = issue.fields?['status']?['name'] as String?;
-    jiraIssue.reporter = issue.fields?['reporter']?['displayName'] as String?;
-    jiraIssue.labels = List<String>.from(issue.fields?['labels'] ?? []);
-
-    var issueLinks = issue.fields?['issuelinks'] as List<dynamic>?;
-    if (issueLinks != null) {
-      for (var link in issueLinks) {
-        var type = link['type']?['name'] as String?;
-        var outward = link['outwardIssue'];
-        var inward = link['inwardIssue'];
-
-        if (outward != null) {
-          jiraIssue.addOutLink(
-            JiraIssueLink(
-              id: outward['id'] ?? '',
-              name: type ?? '',
-              key: outward['key'] ?? '',
-            ),
-          );
-        }
-        if (inward != null) {
-          jiraIssue.addInLink(
-            JiraIssueLink(
-              id: inward['id'] ?? '',
-              name: type ?? '',
-              key: inward['key'] ?? '',
-            ),
-          );
-        }
-      }
-    }
-
-    var subtasks = issue.fields?['subtasks'] as List<dynamic>?;
-    if (subtasks != null) {
-      for (var subtask in subtasks) {
-        jiraIssue.addOutLink(
-          JiraIssueLink(
-            id: subtask['id'] ?? '',
-            name: 'Subtask',
-            key: subtask['key'] ?? '',
-          ),
-        );
-      }
-    }
-
-    return jiraIssue;
-  }
-
-  void addOutLink(JiraIssueLink jiraIssueLink) {
-    outLinks[jiraIssueLink.key] = jiraIssueLink;
-  }
-
-  void addInLink(JiraIssueLink jiraIssueLink) {
-    inLink[jiraIssueLink.key] = jiraIssueLink;
-  }
-}
-
-/// JiraClient is a wrapper around the Atlassian Jira API client
-class JiraClient {
-  late ApiClient client;
-  late JiraPlatformApi jira;
-
-  JiraClient() {
-    var user = config.file!.jiraUser;
-    var apiToken = config.file!.apiKey;
-    var jiraUrl = config.file!.jiraUrl;
-    client = ApiClient.basicAuthentication(
-      Uri.https(jiraUrl, ''),
-      user: user,
-      apiToken: apiToken,
-    );
-
-    jira = JiraPlatformApi(client);
-    //   var currentUser = await jira!.myself.getCurrentUser();
-    // print('Current User: ${currentUser.displayName}');
-  }
-
-  void close() {
-    client.close();
-  }
-}
+import 'package:kur/jira_client.dart';
+import 'package:kur/jira_issue.dart';
+import 'package:kur/temp_files_cache.dart';
 
 // JiraService is a service class to interact with Jira issues
 class JiraService {
-  final LruCache issueBeanCache = LruCache<String, IssueBean>(500);
-  final LruCache searchResultsCache = LruCache<String, SearchResults>(500);
+  final TempFilesCache issueBeanCache = TempFilesCache(maxAge: Duration(days: 7),name: "issueBeanCache");
+  final TempFilesCache searchResultsCache = TempFilesCache(maxAge: Duration(days: 7),name: "searchResultsCache");
 
   // get an issue bean by its ID or key
   Future<IssueBean> getIssueBean(String issueIdOrKey) async {
@@ -129,7 +18,7 @@ class JiraService {
     var response = await issueBeanCache.get(issueIdOrKey);
     if (response != null) {
       debugPrint('Issue bean found in cache for: $issueIdOrKey');
-      return response;
+      return IssueBean.fromJson(response);
     }
 
     JiraClient client = JiraClient();
@@ -137,7 +26,7 @@ class JiraService {
       IssueBean response = await client.jira.issues.getIssue(
         issueIdOrKey: issueIdOrKey,
       );
-      issueBeanCache.put(issueIdOrKey, response);
+      issueBeanCache.put(issueIdOrKey, response.toJson());
       return response;
     } finally {
       client.close();
@@ -155,14 +44,15 @@ class JiraService {
     var response = await searchResultsCache.get(jql);
     if (response != null) {
       debugPrint('Search results found in cache for: $jql');
-      return response;
+      return SearchResults.fromJson(response);
     }
 
     JiraClient client = JiraClient();
     try {
       SearchResults response = await client.jira.issueSearch
-          .searchForIssuesUsingJql(jql: jql, maxResults: size, startAt: offset);
-      searchResultsCache.put(jql, response);
+          .searchForIssuesUsingJql(jql: jql, maxResults: size, startAt: offset);                
+      response.toJson();
+      searchResultsCache.put(jql, response.toJson());
       return response;
     } finally {
       client.close();
@@ -224,7 +114,7 @@ class JiraService {
     debugPrint('Opening issue in browser: $key');
     String jiraUrl = config.file!.jiraUrl;
     String url = 'https://$jiraUrl/browse/$key';
-    
+
     if (Platform.isMacOS) {
       Process.run('open', [url]);
     } else if (Platform.isWindows) {
