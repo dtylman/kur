@@ -23,6 +23,9 @@ class ProjectGraphState extends State<ProjectGraph> {
   bool loaded = false;
   bool showClosed = true;
   final TransformationController transformationController = TransformationController();
+  final TextEditingController filterController = TextEditingController();
+  String? filterText;
+  String? highlightedIssueKey;
 
   @override
   void initState() {
@@ -75,7 +78,6 @@ class ProjectGraphState extends State<ProjectGraph> {
 
   @override
   Widget build(BuildContext context) {
-    // Top panel with filter and actions
     Widget topPanel = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -85,6 +87,25 @@ class ProjectGraphState extends State<ProjectGraph> {
             onChanged: onShowClosedChanged,
           ),
           const Text('Show closed'),
+          const SizedBox(width: 16),
+          // Filter input and search button
+          SizedBox(
+            width: 200,
+            child: TextField(
+              controller: filterController,
+              decoration: const InputDecoration(
+                labelText: 'Filter',
+                isDense: true,
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (_) => onFilterSearch(),
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: onFilterSearch,
+            child: const Text('Search'),
+          ),
           const SizedBox(width: 16),
           ElevatedButton(
             onPressed: onRefreshPressed,
@@ -167,6 +188,32 @@ class ProjectGraphState extends State<ProjectGraph> {
     );
   }
 
+  void onFilterSearch() {
+    final query = filterController.text.trim().toLowerCase();
+    if (query.isEmpty) {
+      setState(() {
+        highlightedIssueKey = null;
+      });
+      return;
+    }
+    String? foundKey;
+    for (final entry in filteredIssues.entries) {
+      final issue = entry.value;
+      if (issue.key.toLowerCase().contains(query) ||
+          (issue.summary?.toLowerCase().contains(query) ?? false) ||
+          (issue.type?.toLowerCase().contains(query) ?? false) ||
+          (issue.status?.toLowerCase().contains(query) ?? false) ||
+          (issue.assignee?.toLowerCase().contains(query) ?? false) ||
+          (issue.reporter?.toLowerCase().contains(query) ?? false)) {
+        foundKey = issue.key;
+        break;
+      }
+    }
+    setState(() {
+      highlightedIssueKey = foundKey;
+    });
+  }
+
   Widget nodeBuilder(Node node) {
     String? issueID = node.key?.value;
     if (issueID == null || !filteredIssues.containsKey(issueID)) {
@@ -176,7 +223,7 @@ class ProjectGraphState extends State<ProjectGraph> {
       );
     }
     JiraIssue? issue = filteredIssues[issueID];
-    final isSelected = widget.selectedIssueKey == issueID;
+    final isSelected = (widget.selectedIssueKey == issueID) || (highlightedIssueKey == issueID);
     return JiraIssueCard(issue: issue!, isSelected: isSelected);
   }
 
