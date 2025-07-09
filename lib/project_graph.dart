@@ -28,6 +28,7 @@ class ProjectGraphState extends State<ProjectGraph> {
   String? highlightedIssueKey;
   // Edge labels for the graph
   Map<int, String> edgeLabels = {};
+  double separationValue = 30.0;
 
   @override
   void initState() {
@@ -116,8 +117,8 @@ class ProjectGraphState extends State<ProjectGraph> {
     SugiyamaAlgorithm sugyama = SugiyamaAlgorithm(
       SugiyamaConfiguration()
         ..bendPointShape = MaxCurvedBendPointShape()
-        ..levelSeparation = 30
-        ..nodeSeparation = 30
+        ..levelSeparation = separationValue.toInt()
+        ..nodeSeparation = separationValue.toInt()
         ..orientation = SugiyamaConfiguration.ORIENTATION_LEFT_RIGHT,
     );
     SugiyamaEdgeRenderer existingRenderer = sugyama.renderer as SugiyamaEdgeRenderer;
@@ -215,6 +216,30 @@ class ProjectGraphState extends State<ProjectGraph> {
         children: [
           Checkbox(value: showClosed, onChanged: onShowClosedChanged),
           const Text('Show closed'),
+          const SizedBox(width: 16),
+          // Slider for level/node separation
+          SizedBox(
+            width: 180,
+            child: Row(
+              children: [
+                const Text('Separation'),
+                Expanded(
+                  child: Slider(
+                    min: 10,
+                    max: 100,
+                    divisions: 18,
+                    value: separationValue,
+                    label: separationValue.round().toString(),
+                    onChanged: (v) {
+                      setState(() {
+                        separationValue = v;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(width: 16),
           // Filter input and search button
           SizedBox(
