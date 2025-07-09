@@ -4,8 +4,20 @@ import 'package:kur/config_service.dart';
 import 'package:kur/jira_issue.dart';
 import 'package:kur/jira_service.dart';
 
+class GraphLoadedEventArgs {
+  final Map<int, String> edgeLabels;
+  final Map<String, JiraIssue> issues;
+  final Graph graph;
+
+  GraphLoadedEventArgs({
+    required this.edgeLabels,
+    required this.issues,
+    required this.graph,
+  });
+}
+
 class ProjectGraphLoader extends StatefulWidget {
-  final void Function(Map<String, JiraIssue>, Graph) onLoaded;
+  final void Function(GraphLoadedEventArgs args) onLoaded;
   final Project project;
 
   const ProjectGraphLoader({
@@ -20,6 +32,7 @@ class ProjectGraphLoader extends StatefulWidget {
 
 class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
   Map<String, JiraIssue> issues = {};
+  Map<int, String> edgeLabels = {};
   Graph graph = Graph();
   var scanned = 0; // Number of issues scanned
   var total = 0; // Total number of issues to scan
@@ -106,8 +119,8 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
           scanned++;      
         });
       }
-    } finally {
-      widget.onLoaded(issues, graph);
+    } finally {      
+      widget.onLoaded(GraphLoadedEventArgs(edgeLabels: edgeLabels, issues: issues, graph: graph));
     }
   }
 
@@ -122,12 +135,14 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
     for (var link in links.values) {
       Node childeNode = await addIssue(link.key);
       MaterialColor color = getLinkColor(link.name);
-
+      Edge edge;
       if (inbound) {
-        graph.addEdge(node, childeNode, paint: Paint()..color = color);
+        edge= graph.addEdge(node, childeNode, paint: Paint()..color = color);
       } else {        
-        graph.addEdge(childeNode, node, paint: Paint()..color = color);
+        edge= graph.addEdge(childeNode, node, paint: Paint()..color = color);
       }
+
+      edgeLabels[edge.hashCode] = link.name;
 
       setState(() {
         scanned++;
@@ -151,7 +166,7 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
       node = graph.getNodeUsingId(issue.key);
     }
 
-    await addLinks(issue.outLinks, node, false);
+    await addLinks(issue.outLinks, node, true);
     //await addLinks(issue.inLinks, node, true);
 
     setState(() {
