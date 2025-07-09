@@ -3,6 +3,7 @@ import 'package:kur/add_project_dialog.dart';
 import 'package:kur/config_service.dart';
 import 'package:kur/project_view.dart';
 import 'package:kur/projects_list.dart';
+import 'package:kur/user_name_textbox.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -27,11 +28,20 @@ class MainPageState extends State<MainPage> {
       return const Center(child: CircularProgressIndicator());
     }
     return Scaffold(
-      body: Row(
+      body: Column(
         children: [
-          buildLeftPanel(),
-          const VerticalDivider(width: 1),
-          Expanded(child: buildMainPanel()),
+          // Top panel
+          buildTopPanel(),
+          // Main content
+          Expanded(
+            child: Row(
+              children: [
+                buildLeftPanel(),
+                const VerticalDivider(width: 1),
+                Expanded(child: buildMainPanel()),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -97,7 +107,7 @@ class MainPageState extends State<MainPage> {
     setState(() {
       _selectedProject = project;
     });
-    Navigator.of(context).pop(); 
+    Navigator.of(context).pop();
   }
 
   void onDeleteProject(Project project) async {
@@ -109,6 +119,32 @@ class MainPageState extends State<MainPage> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Project "${project.name}" deleted')),
+    );
+  }
+
+  Widget buildTopPanel() {
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          // Program name on the left
+          const Text(
+            'Kur',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const Spacer(),
+          UserNameTextbox(),
+          const SizedBox(width: 16),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () {
+              Navigator.of(context).pushNamed('/settings');
+            },
+          ),
+        ],
+      ),
     );
   }
 }

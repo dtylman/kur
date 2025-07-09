@@ -133,6 +133,11 @@ class JiraService {
     // await searchResultsCache.clear();
     // debugPrint('Cleared search results cache');
   }
+
+  Future<String> getCurrentUser() async {
+     User userName = await JiraClient().jira.myself.getCurrentUser();
+     return userName.displayName?? 'Unknown User';
+  }
 }
 
 JiraService jiraService = JiraService();
