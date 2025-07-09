@@ -71,7 +71,7 @@ class ProjectGraphState extends State<ProjectGraph> {
           targetId != null &&
           allowedIds.contains(sourceId) &&
           allowedIds.contains(targetId)) {
-        filtered.addEdge(edge.source, edge.destination);
+        filtered.addEdge(edge.source, edge.destination, paint: edge.paint);
       }
     }
     return filtered;
