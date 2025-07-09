@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kur/add_project_dialog.dart';
+import 'package:kur/config_dialog.dart';
 import 'package:kur/config_service.dart';
 import 'package:kur/project_view.dart';
 import 'package:kur/projects_list.dart';
@@ -139,12 +140,23 @@ class MainPageState extends State<MainPage> {
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Settings',
-            onPressed: () {
-              Navigator.of(context).pushNamed('/settings');
-            },
+            onPressed: onSettingsPressed,
           ),
         ],
       ),
     );
+  }
+
+  void onSettingsPressed() {
+    showDialog(
+      context: context,
+      builder: (context) => const ConfigDialog(),
+    ).then((result) {
+      if (result == true) {
+        setState(() {
+          loadProjects();
+        });
+      }
+    });
   }
 }
