@@ -6,7 +6,11 @@ class JiraIssueCard extends StatelessWidget {
   final JiraIssue issue;
   final bool isSelected;
 
-  const JiraIssueCard({super.key, required this.issue, this.isSelected = false});
+  const JiraIssueCard({
+    super.key,
+    required this.issue,
+    this.isSelected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -161,8 +165,10 @@ class JiraIssueCard extends StatelessWidget {
         return Colors.blue.shade100;
       case 'bug':
         return Colors.red.shade100;
+      case 'subtask':
       case 'sub-task':
         return Colors.blueGrey.shade100;
+
       default:
         debugPrint('Unknown type: $type');
         return Colors.grey.shade100; // Default color for unknown statuses
