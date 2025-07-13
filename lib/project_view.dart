@@ -15,6 +15,7 @@ class ProjectView extends StatefulWidget {
 class ProjectViewState extends State<ProjectView> {
   Project? project;
   String? selectedIssueKey;
+  bool _isLeftPaneCollapsed = false;
 
   @override
   void initState() {
@@ -30,29 +31,7 @@ class ProjectViewState extends State<ProjectView> {
     return Row(
       children: [
         // Left pane
-        Container(
-          width: 250,
-          color: Colors.grey[200],
-          child: Column(
-            children: [
-              Expanded(
-                child: ProjectsIssuesList(
-                  issues: project!.issues,
-                  onIssueSelected: onIssueSelected,
-                  onIssueDeleted: onIssueDeleted,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton.icon(
-                  onPressed: onAddIssue,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Issue'),
-                ),
-              ),
-            ],
-          ),
-        ),
+        buildLeftPane(),
         // Main panel
         Expanded(
           child: ProjectGraph(
@@ -113,5 +92,56 @@ class ProjectViewState extends State<ProjectView> {
       selectedIssueKey = value;
     });
     debugPrint('Issue selected: $value');
+  }
+
+  Widget buildLeftPane() {
+    final double paneWidth = _isLeftPaneCollapsed ? 50 : 250;
+    return Container(
+      width: paneWidth,
+      color: Colors.grey[200],
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                      _isLeftPaneCollapsed ? Icons.chevron_right : Icons.chevron_left),
+                  onPressed: () {
+                    setState(() {
+                      _isLeftPaneCollapsed = !_isLeftPaneCollapsed;
+                    });
+                  },
+                  tooltip: _isLeftPaneCollapsed ? 'Expand' : 'Collapse',
+                ),
+                if (!_isLeftPaneCollapsed)
+                  Text(
+                    'Issues',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+              ],
+            ),
+          ),
+          if (!_isLeftPaneCollapsed) ...[
+            Expanded(
+              child: ProjectsIssuesList(
+                issues: project!.issues,
+                onIssueSelected: onIssueSelected,
+                onIssueDeleted: onIssueDeleted,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton.icon(
+                onPressed: onAddIssue,
+                icon: const Icon(Icons.add),
+                label: const Text('Add Issue'),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }

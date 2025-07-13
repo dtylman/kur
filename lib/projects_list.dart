@@ -22,31 +22,45 @@ class ProjectsListState extends State<ProjectsList> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: widget.projects.length,
-      itemBuilder: (context, index) {
-        final project = widget.projects[index];
-        final isSelected = _selectedProject?.id == project.id;
-        return ListTile(
-          title: Text(project.name),
-          subtitle: Text(project.id),
-          selected: isSelected,
-          onTap: () {
-            setState(() {
-              _selectedProject = project;
-            });
-            widget.onProjectSelected(project);
-          },
-          trailing: IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () {
-              if (widget.onProjectDeleted != null) {
-                widget.onProjectDeleted!(project);
-              }              
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+          child: Text(
+            'Projects',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: widget.projects.length,
+            itemBuilder: (context, index) {
+              final project = widget.projects[index];
+              final isSelected = _selectedProject?.id == project.id;
+              return ListTile(
+                title: Text(project.name),
+                subtitle: Text(project.id),
+                selected: isSelected,
+                onTap: () {
+                  setState(() {
+                    _selectedProject = project;
+                  });
+                  widget.onProjectSelected(project);
+                },
+                trailing: IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () {
+                    if (widget.onProjectDeleted != null) {
+                      widget.onProjectDeleted!(project);
+                    }              
+                  },
+                ),
+              );
             },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 }
