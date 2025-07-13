@@ -1,4 +1,6 @@
 import 'package:atlassian_apis/jira_platform.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class JiraIssueLink {
   final String id;
@@ -17,6 +19,7 @@ class JiraIssue {
   String? type;
   String? status;
   String? reporter;
+  DateTime? created;
 
   List<String> labels = [];
 
@@ -24,6 +27,8 @@ class JiraIssue {
   Map<String, JiraIssueLink> outLinks = {}; // key -> JiraIssueLink
 
   JiraIssue({required this.id, required this.key});
+
+  Duration? get age => getAge();
 
   static JiraIssue fromBean(IssueBean issue) {
     var jiraIssue = JiraIssue(id: issue.id ?? '', key: issue.key ?? '');
@@ -35,14 +40,22 @@ class JiraIssue {
     jiraIssue.reporter = issue.fields?['reporter']?['displayName'] as String?;
     jiraIssue.labels = List<String>.from(issue.fields?['labels'] ?? []);
 
+    //Jira time format is 2024-02-14T13:44:14.603+0200
+    var createdStr = issue.fields?['created'];
+    if (createdStr != null) {
+      // Use DateFormat to parse Jira's date format
+      var jiraDateFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+      jiraIssue.created = jiraDateFormat.parse(createdStr);
+    }
+
     var issueLinks = issue.fields?['issuelinks'] as List<dynamic>?;
     if (issueLinks != null) {
-      for (var link in issueLinks) {
-        var type = link['type']?['name'] as String?;
+      for (var link in issueLinks) {        
+        var type = link['type']?['name'] as String?;        
         var outward = link['outwardIssue'];
         var inward = link['inwardIssue'];
 
-        if (outward != null) {
+        if (outward != null) {          
           jiraIssue.addOutLink(
             JiraIssueLink(
               id: outward['id'] ?? '',
@@ -80,10 +93,33 @@ class JiraIssue {
   }
 
   void addOutLink(JiraIssueLink jiraIssueLink) {
+    if (!validLink(jiraIssueLink,'out')) { 
+      return;
+    }
     outLinks[jiraIssueLink.key] = jiraIssueLink;
   }
 
   void addInLink(JiraIssueLink jiraIssueLink) {
+      if (!validLink(jiraIssueLink,'in')) { 
+      return;
+    }
     inLinks[jiraIssueLink.key] = jiraIssueLink;
+  }
+
+  Duration? getAge() {
+    if (created == null) return null;
+    return DateTime.now().difference(created!);
+  }
+  
+  bool validLink(JiraIssueLink jiraIssueLink, String category) {
+    Map<String,List<String>> validLinks = {};
+    validLinks["blocks"]=["in","out"];
+    String name = jiraIssueLink.name.toLowerCase();    
+    List<String>? items = validLinks[name];
+    if (items!=null && items.contains(category)) {
+      return true;      
+    }    
+    debugPrint('Invalid link: $name for category: $category');
+    return false;
   }
 }

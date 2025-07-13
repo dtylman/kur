@@ -17,7 +17,7 @@ class ProjectViewState extends State<ProjectView> {
   Project? project;
   String? selectedIssueKey;
   bool _isLeftPaneCollapsed = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -150,21 +150,21 @@ class ProjectViewState extends State<ProjectView> {
         child: Column(
           children: [
             TabBar(
-              onTap: (value) => print(value),              
+              onTap: (value) => print(value),
               tabs: [
-                Tab(text: 'Graph'),
                 Tab(text: 'Details'),
+                Tab(text: 'Graph'),
               ],
             ),
             Expanded(
-              child: TabBarView(                
+              child: TabBarView(
                 children: [
-                  ProjectGraph(
+                  ProjectDetails(
                     key: ValueKey(project!.id),
                     project: project!,
                     selectedIssueKey: selectedIssueKey,
                   ),
-                  ProjectDetails(
+                  ProjectGraph(
                     key: ValueKey(project!.id),
                     project: project!,
                     selectedIssueKey: selectedIssueKey,

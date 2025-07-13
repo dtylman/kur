@@ -96,7 +96,7 @@ class JiraService {
     int size = 100;
     SearchResults response = await getSearchResults(jql, size, 0);
 
-    do {
+    do {      
       for (var issue in response.issues) {
         list.add(JiraIssue.fromBean(issue));
       }

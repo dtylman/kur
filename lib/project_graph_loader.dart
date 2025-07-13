@@ -132,7 +132,7 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
     setState(() {
       total += links.length;      
     });
-    for (var link in links.values) {
+    for (JiraIssueLink link in links.values) {
       Node childeNode = await addIssue(link.key);
       MaterialColor color = getLinkColor(link.name);
       Edge edge;
@@ -167,7 +167,7 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
     }
 
     await addLinks(issue.outLinks, node, true);
-    //await addLinks(issue.inLinks, node, true);
+    await addLinks(issue.inLinks, node, false);
 
     setState(() {
       issueScanned = '${issue!.key}: ${issue.summary}';
