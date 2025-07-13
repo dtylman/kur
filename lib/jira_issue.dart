@@ -1,6 +1,7 @@
 import 'package:atlassian_apis/jira_platform.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:kur/config_service.dart';
 
 class JiraIssueLink {
   final String id;
@@ -112,14 +113,14 @@ class JiraIssue {
   }
   
   bool validLink(JiraIssueLink jiraIssueLink, String category) {
-    Map<String,List<String>> validLinks = {};
-    validLinks["blocks"]=["in","out"];
+   
+    
     String name = jiraIssueLink.name.toLowerCase();    
-    List<String>? items = validLinks[name];
+    List<String>? items = config.file!.validLinks[name];
     if (items!=null && items.contains(category)) {
       return true;      
     }    
-    debugPrint('Invalid link: $name for category: $category');
+    debugPrint('**** link ignored : "$name" for category: $category');
     return false;
   }
 }

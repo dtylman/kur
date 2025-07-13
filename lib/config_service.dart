@@ -23,17 +23,22 @@ class Project {
   }
 }
 
-class ConfigFile {  
+class ConfigFile {
   final String jiraUrl;
   final String jiraUser;
   final String apiKey;
   final List<Project> projects;
+
+  Map<String, List<String>> validLinks;
 
   ConfigFile({
     required this.jiraUrl,
     required this.jiraUser,
     required this.apiKey,
     required this.projects,
+    this.validLinks = const {
+      "blocks": ["in", "out"],
+    },
   });
 
   static String get configFilePath {
@@ -64,7 +69,7 @@ class ConfigFile {
     await file.writeAsString(content);
   }
 
-  factory ConfigFile.fromJson(Map<String, dynamic> json) {    
+  factory ConfigFile.fromJson(Map<String, dynamic> json) {
     return ConfigFile(
       jiraUrl: json['jiraUrl'] as String,
       jiraUser: json['jiraUser'] as String? ?? '',
@@ -72,6 +77,13 @@ class ConfigFile {
       projects: (json['projects'] as List<dynamic>)
           .map((project) => Project.fromJson(project as Map<String, dynamic>))
           .toList(),
+      validLinks:
+          (json['validLinks'] as Map<String, dynamic>?)?.map(
+            (key, value) => MapEntry(key, List<String>.from(value as List)),
+          ) ??
+          {
+            "blocks": ["in", "out"],
+          },
     );
   }
 
@@ -81,29 +93,25 @@ class ConfigFile {
       'jiraUser': jiraUser,
       'apiKey': apiKey,
       'projects': projects.map((p) => p.toJson()).toList(),
+      'validLinks': validLinks,
     };
   }
 }
 
 class ConfigService {
-  ConfigFile? file;  
+  ConfigFile? file;
 
-  Future<void> initialize() async{
+  Future<void> initialize() async {
     try {
-      file = await ConfigFile.load();      
+      file = await ConfigFile.load();
       debugPrint('Config loaded successfully');
     } catch (e) {
-      debugPrint('Error loading config: $e');      
-      file = ConfigFile(
-        jiraUrl: '',
-        jiraUser: '',
-        apiKey: '',
-        projects: [],
-      );
+      debugPrint('Error loading config: $e');
+      file = ConfigFile(jiraUrl: '', jiraUser: '', apiKey: '', projects: []);
     }
   }
 
-  Future<List<Project>> addProject(Project project) async{
+  Future<List<Project>> addProject(Project project) async {
     file!.projects.add(project);
     await file!.save();
     return file!.projects;
@@ -116,12 +124,10 @@ class ConfigService {
   }
 
   Project? getProject(String projectID) {
-    return file!.projects.firstWhere(
-      (project) => project.id == projectID,      
-    );
+    return file!.projects.firstWhere((project) => project.id == projectID);
   }
 
-  Future<void> saveProject(Project project) async{
+  Future<void> saveProject(Project project) async {
     debugPrint('Saving project: ${project.name} (${project.id})');
     final index = file!.projects.indexWhere((p) => p.id == project.id);
     if (index != -1) {

@@ -41,18 +41,22 @@ class JiraService {
   ) async {
     debugPrint('getting search results with JQL: $jql');
 
-    var response = await searchResultsCache.get(jql);
+    var cacheKey = '$jql-$size-$offset';
+    try{
+    var response = await searchResultsCache.get(cacheKey);
     if (response != null) {
       debugPrint('Search results found in cache for: $jql');
       return SearchResults.fromJson(response);
     }
-
+    } catch (e) {
+      debugPrint('Error getting search results from cache: $e');
+    }
     JiraClient client = JiraClient();
     try {
       SearchResults response = await client.jira.issueSearch
           .searchForIssuesUsingJql(jql: jql, maxResults: size, startAt: offset);                
       response.toJson();
-      searchResultsCache.put(jql, response.toJson());
+      searchResultsCache.put(cacheKey, response.toJson());
       return response;
     } finally {
       client.close();
