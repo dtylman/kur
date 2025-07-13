@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kur/config_service.dart';
+import 'package:kur/project_details.dart';
 import 'package:kur/project_graph.dart';
 import 'package:kur/project_issues_list.dart';
 
@@ -16,7 +17,7 @@ class ProjectViewState extends State<ProjectView> {
   Project? project;
   String? selectedIssueKey;
   bool _isLeftPaneCollapsed = false;
-
+  
   @override
   void initState() {
     super.initState();
@@ -33,13 +34,7 @@ class ProjectViewState extends State<ProjectView> {
         // Left pane
         buildLeftPane(),
         // Main panel
-        Expanded(
-          child: ProjectGraph(
-            key: ValueKey(project!.id),
-            project: project!,
-            selectedIssueKey: selectedIssueKey,
-          ),
-        ),
+        buildMainPane(),
       ],
     );
   }
@@ -107,7 +102,10 @@ class ProjectViewState extends State<ProjectView> {
               children: [
                 IconButton(
                   icon: Icon(
-                      _isLeftPaneCollapsed ? Icons.chevron_right : Icons.chevron_left),
+                    _isLeftPaneCollapsed
+                        ? Icons.chevron_right
+                        : Icons.chevron_left,
+                  ),
                   onPressed: () {
                     setState(() {
                       _isLeftPaneCollapsed = !_isLeftPaneCollapsed;
@@ -141,6 +139,41 @@ class ProjectViewState extends State<ProjectView> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget buildMainPane() {
+    return Expanded(
+      child: DefaultTabController(
+        length: 2,
+        child: Column(
+          children: [
+            TabBar(
+              onTap: (value) => print(value),              
+              tabs: [
+                Tab(text: 'Graph'),
+                Tab(text: 'Details'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(                
+                children: [
+                  ProjectGraph(
+                    key: ValueKey(project!.id),
+                    project: project!,
+                    selectedIssueKey: selectedIssueKey,
+                  ),
+                  ProjectDetails(
+                    key: ValueKey(project!.id),
+                    project: project!,
+                    selectedIssueKey: selectedIssueKey,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
