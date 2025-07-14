@@ -38,23 +38,23 @@ class IssueListTileState extends State<IssueListTile> {
         title: Text(widget.issueKey),
         selected: widget.isSelected,
         onTap: widget.onTap,
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+        trailing: Wrap(
+          spacing: 0,
           children: [
-        IconButton(
-          icon: const Icon(Icons.error, color: Colors.red),
-          tooltip: 'Show error',
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(problem.toString())),
-            );
-          },
-        ),
-        if (widget.onDelete != null)
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: widget.onDelete,
-          ),
+            IconButton(
+              icon: const Icon(Icons.error, color: Colors.red),
+              tooltip: 'Show error',
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(problem.toString())),
+                );
+              },
+            ),
+            if (widget.onDelete != null)
+              IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: widget.onDelete,
+              ),
           ],
         ),
       );

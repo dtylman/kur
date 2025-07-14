@@ -40,17 +40,15 @@ class ProjectDetailsState extends State<ProjectDetails> {
   @override
   Widget build(BuildContext context) {
     if (widget.project.issues.isEmpty) {
-      return Expanded(
-        child: Center(
-          child: Text(
-            'No issues found in this project',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
+      return Center(
+        child: Text(
+          'No issues found in this project',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
         ),
       );
     }
     if (!loaded) {
-      return Expanded(child: Center(child: graphLoader));
+      return Center(child: graphLoader);
     }
 
     // Filter and sort issues
@@ -65,79 +63,77 @@ class ProjectDetailsState extends State<ProjectDetails> {
     }).toList();
     filteredIssues.sort(tableRowSorter);
 
-    return Expanded(
-      child: Column(
-        children: [
-          // Commands pane
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              children: [
-                Checkbox(
-                  value: showClosed,
+    return Column(
+      children: [
+        // Commands pane
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            children: [
+              Checkbox(
+                value: showClosed,
+                onChanged: (val) {
+                  setState(() {
+                    showClosed = val ?? false;
+                  });
+                },
+              ),
+              const Text('Show Closed'),
+              const SizedBox(width: 24),
+              Expanded(
+                child: TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Filter by key or summary',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
                   onChanged: (val) {
                     setState(() {
-                      showClosed = val ?? false;
+                      filterText = val;
                     });
                   },
                 ),
-                const Text('Show Closed'),
-                const SizedBox(width: 24),
-                Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Filter by key or summary',
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                    onChanged: (val) {
-                      setState(() {
-                        filterText = val;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('Key')),
-                  DataColumn(label: Text('Summary')),
-                  DataColumn(label: Text('Status')),
-                  DataColumn(label: Text('Assignee')),
-                  DataColumn(label: Text('Reporter')),
-                  DataColumn(label: Text('Type')),
-                  DataColumn(label: Text('Created')),
-                ],
-                rows: filteredIssues.map((issue) {
-                  return DataRow(
-                    cells: [
-                      DataCell(
-                        TextButton(
-                          onPressed: () {
-                            onIssuePressed(issue);
-                          },
-                          child: Text(issue.key),
-                        ),
-                      ),                      
-                      DataCell(Text(issue.summary ?? '')),
-                      DataCell(Text(issue.status ?? '')),
-                      DataCell(Text(issue.assignee ?? '')),
-                      DataCell(Text(issue.reporter ?? '')),
-                      DataCell(Text(issue.type ?? '')),
-                      DataCell(Text(humanizeTimeAgo(issue.age))),
-                    ],
-                  );
-                }).toList(),
               ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('Key')),
+                DataColumn(label: Text('Summary')),
+                DataColumn(label: Text('Status')),
+                DataColumn(label: Text('Assignee')),
+                DataColumn(label: Text('Reporter')),
+                DataColumn(label: Text('Type')),
+                DataColumn(label: Text('Created')),
+              ],
+              rows: filteredIssues.map((issue) {
+                return DataRow(
+                  cells: [
+                    DataCell(
+                      TextButton(
+                        onPressed: () {
+                          onIssuePressed(issue);
+                        },
+                        child: Text(issue.key),
+                      ),
+                    ),                      
+                    DataCell(Text(issue.summary ?? '')),
+                    DataCell(Text(issue.status ?? '')),
+                    DataCell(Text(issue.assignee ?? '')),
+                    DataCell(Text(issue.reporter ?? '')),
+                    DataCell(Text(issue.type ?? '')),
+                    DataCell(Text(humanizeTimeAgo(issue.age))),
+                  ],
+                );
+              }).toList(),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
