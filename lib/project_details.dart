@@ -97,42 +97,51 @@ class ProjectDetailsState extends State<ProjectDetails> {
             ],
           ),
         ),
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Key')),
-                DataColumn(label: Text('Summary')),
-                DataColumn(label: Text('Status')),
-                DataColumn(label: Text('Assignee')),
-                DataColumn(label: Text('Reporter')),
-                DataColumn(label: Text('Type')),
-                DataColumn(label: Text('Created')),
-              ],
-              rows: filteredIssues.map((issue) {
-                return DataRow(
-                  cells: [
-                    DataCell(
-                      TextButton(
-                        onPressed: () {
-                          onIssuePressed(issue);
-                        },
-                        child: Text(issue.key),
-                      ),
-                    ),                      
-                    DataCell(Text(issue.summary ?? '')),
-                    DataCell(Text(issue.status ?? '')),
-                    DataCell(Text(issue.assignee ?? '')),
-                    DataCell(Text(issue.reporter ?? '')),
-                    DataCell(Text(issue.type ?? '')),
-                    DataCell(Text(humanizeTimeAgo(issue.age))),
+        SizedBox(
+          height: MediaQuery.of(context).size.height - 200, // Adjust height as needed
+          width: MediaQuery.of(context).size.width,
+          child: Scrollbar(
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(                  
+                  columns: const [
+                    DataColumn(label: Text('Key')),
+                    DataColumn(label: Text('Summary'),columnWidth: FixedColumnWidth(300)),
+                    DataColumn(label: Text('Status')),
+                    DataColumn(label: Text('Assignee')),
+                    DataColumn(label: Text('Reporter')),
+                    DataColumn(label: Text('Type')),
+                    DataColumn(label: Text('Created')),
                   ],
-                );
-              }).toList(),
+                  rows: filteredIssues.map((issue) {
+                    return DataRow(
+                      cells: [
+                        DataCell(
+                          TextButton(
+                            onPressed: () {
+                              onIssuePressed(issue);
+                            },
+                            child: Text(issue.key),
+                          ),
+                        ),                      
+                        DataCell(Text(issue.summary ?? '')),
+                        DataCell(Text(issue.status ?? '')),
+                        DataCell(Text(issue.assignee ?? '')),
+                        DataCell(Text(issue.reporter ?? '')),
+                        DataCell(Text(issue.type ?? '')),
+                        DataCell(Text(humanizeTimeAgo(issue.age))),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
           ),
         ),
+        
       ],
     );
   }
