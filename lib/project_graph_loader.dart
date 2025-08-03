@@ -114,6 +114,7 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
     try {
 
       for (var key in widget.project.issues) {
+        if (!mounted) return; 
         await addIssue(key);
         setState(() {
           scanned++;      
@@ -129,6 +130,7 @@ class ProjectGraphLoaderState extends State<ProjectGraphLoader> {
     Node node,
     bool inbound,
   ) async {    
+    if (!mounted) return;
     setState(() {
       total += links.length;      
     });

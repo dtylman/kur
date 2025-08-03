@@ -114,7 +114,7 @@ class ProjectDetailsState extends State<ProjectDetails> {
                     DataColumn(label: Text('Assignee')),
                     DataColumn(label: Text('Reporter')),
                     DataColumn(label: Text('Type')),
-                    DataColumn(label: Text('Created')),
+                    DataColumn(label: Text('Age')),
                   ],
                   rows: filteredIssues.map((issue) {
                     return DataRow(
