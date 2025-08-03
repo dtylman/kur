@@ -28,6 +28,9 @@ class ProjectDetailsState extends State<ProjectDetails> {
   String filterText = '';
   bool showClosed = false;
 
+  // Scroll controller for vertical scrolling
+  final ScrollController _verticalScrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +38,12 @@ class ProjectDetailsState extends State<ProjectDetails> {
       project: widget.project,
       onLoaded: onGraphLoaded,
     );
+  }
+
+  @override
+  void dispose() {
+    _verticalScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -97,51 +106,53 @@ class ProjectDetailsState extends State<ProjectDetails> {
             ],
           ),
         ),
-        SizedBox(
-          height: MediaQuery.of(context).size.height - 200, // Adjust height as needed
-          width: MediaQuery.of(context).size.width,
-          child: Scrollbar(
-            thumbVisibility: true,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
+        Expanded(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Scrollbar(
+              controller: _verticalScrollController,
+              thumbVisibility: true,
               child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(                  
-                  columns: const [
-                    DataColumn(label: Text('Key')),
-                    DataColumn(label: Text('Summary'),columnWidth: FixedColumnWidth(300)),
-                    DataColumn(label: Text('Status')),
-                    DataColumn(label: Text('Assignee')),
-                    DataColumn(label: Text('Reporter')),
-                    DataColumn(label: Text('Type')),
-                    DataColumn(label: Text('Age')),
-                  ],
-                  rows: filteredIssues.map((issue) {
-                    return DataRow(
-                      cells: [
-                        DataCell(
-                          TextButton(
-                            onPressed: () {
-                              onIssuePressed(issue);
-                            },
-                            child: Text(issue.key),
+                controller: _verticalScrollController,
+                scrollDirection: Axis.vertical,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Key')),
+                      DataColumn(label: Text('Summary'), columnWidth: FixedColumnWidth(300)),
+                      DataColumn(label: Text('Status')),
+                      DataColumn(label: Text('Assignee')),
+                      DataColumn(label: Text('Reporter')),
+                      DataColumn(label: Text('Type')),
+                      DataColumn(label: Text('Created')),
+                    ],
+                    rows: filteredIssues.map((issue) {
+                      return DataRow(
+                        cells: [
+                          DataCell(
+                            TextButton(
+                              onPressed: () {
+                                onIssuePressed(issue);
+                              },
+                              child: Text(issue.key),
+                            ),
                           ),
-                        ),                      
-                        DataCell(Text(issue.summary ?? '')),
-                        DataCell(Text(issue.status ?? '')),
-                        DataCell(Text(issue.assignee ?? '')),
-                        DataCell(Text(issue.reporter ?? '')),
-                        DataCell(Text(issue.type ?? '')),
-                        DataCell(Text(humanizeTimeAgo(issue.age))),
-                      ],
-                    );
-                  }).toList(),
+                          DataCell(Text(issue.summary ?? '')),
+                          DataCell(Text(issue.status ?? '')),
+                          DataCell(Text(issue.assignee ?? '')),
+                          DataCell(Text(issue.reporter ?? '')),
+                          DataCell(Text(issue.type ?? '')),
+                          DataCell(Text(humanizeTimeAgo(issue.age))),
+                        ],
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
             ),
           ),
         ),
-        
       ],
     );
   }
