@@ -23,6 +23,7 @@ class JiraIssue {
   DateTime? created;
 
   List<String> labels = [];
+  List<String> fixVersions = [];
 
   Map<String, JiraIssueLink> inLinks = {}; // key -> JiraIssueLink
   Map<String, JiraIssueLink> outLinks = {}; // key -> JiraIssueLink
@@ -32,6 +33,7 @@ class JiraIssue {
   Duration? get age => getAge();
 
   static JiraIssue fromBean(IssueBean issue) {
+    
     var jiraIssue = JiraIssue(id: issue.id ?? '', key: issue.key ?? '');
     jiraIssue.summary = issue.fields?['summary'] as String?;
     jiraIssue.assignee = issue.fields?['assignee']?['displayName'] as String?;
@@ -41,6 +43,10 @@ class JiraIssue {
     jiraIssue.reporter = issue.fields?['reporter']?['displayName'] as String?;
     jiraIssue.labels = List<String>.from(issue.fields?['labels'] ?? []);
 
+    jiraIssue.fixVersions =
+        List<String>.from((issue.fields?['fixVersions'] as List<dynamic>?)
+                ?.map((v) => v['name'] as String) ??
+            []);
     //Jira time format is 2024-02-14T13:44:14.603+0200
     var createdStr = issue.fields?['created'];
     if (createdStr != null) {

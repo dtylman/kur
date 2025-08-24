@@ -28,9 +28,6 @@ class ProjectDetailsState extends State<ProjectDetails> {
   String filterText = '';
   bool showClosed = false;
 
-  // Scroll controller for vertical scrolling
-  final ScrollController _verticalScrollController = ScrollController();
-
   @override
   void initState() {
     super.initState();
@@ -38,12 +35,6 @@ class ProjectDetailsState extends State<ProjectDetails> {
       project: widget.project,
       onLoaded: onGraphLoaded,
     );
-  }
-
-  @override
-  void dispose() {
-    _verticalScrollController.dispose();
-    super.dispose();
   }
 
   @override
@@ -107,49 +98,44 @@ class ProjectDetailsState extends State<ProjectDetails> {
           ),
         ),
         Expanded(
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: Scrollbar(
-              controller: _verticalScrollController,
-              thumbVisibility: true,
-              child: SingleChildScrollView(
-                controller: _verticalScrollController,
-                scrollDirection: Axis.vertical,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columns: const [
-                      DataColumn(label: Text('Key')),
-                      DataColumn(label: Text('Summary'), columnWidth: FixedColumnWidth(300)),
-                      DataColumn(label: Text('Status')),
-                      DataColumn(label: Text('Assignee')),
-                      DataColumn(label: Text('Reporter')),
-                      DataColumn(label: Text('Type')),
-                      DataColumn(label: Text('Created')),
-                    ],
-                    rows: filteredIssues.map((issue) {
-                      return DataRow(
-                        cells: [
-                          DataCell(
-                            TextButton(
-                              onPressed: () {
-                                onIssuePressed(issue);
-                              },
-                              child: Text(issue.key),
-                            ),
-                          ),
-                          DataCell(Text(issue.summary ?? '')),
-                          DataCell(Text(issue.status ?? '')),
-                          DataCell(Text(issue.assignee ?? '')),
-                          DataCell(Text(issue.reporter ?? '')),
-                          DataCell(Text(issue.type ?? '')),
-                          DataCell(Text(humanizeTimeAgo(issue.age))),
-                        ],
-                      );
-                    }).toList(),
-                  ),
+          child: SingleChildScrollView(
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('Key')),
+                DataColumn(
+                  label: Text('Summary'),
+                  columnWidth: FixedColumnWidth(300),
                 ),
-              ),
+                DataColumn(label: Text('Status')),
+                DataColumn(label: Text('Assignee')),
+                DataColumn(label: Text('Reporter')),
+                DataColumn(label: Text('Type')),
+                DataColumn(label: Text('Created')),
+                DataColumn(label: Text('Fix Versions')),
+                DataColumn(label: Text('Labels')),
+              ],
+              rows: filteredIssues.map((issue) {
+                return DataRow(
+                  cells: [
+                    DataCell(
+                      TextButton(
+                        onPressed: () {
+                          onIssuePressed(issue);
+                        },
+                        child: Text(issue.key),
+                      ),
+                    ),
+                    DataCell(Text(issue.summary ?? '')),
+                    DataCell(Text(issue.status ?? '')),
+                    DataCell(Text(issue.assignee ?? '')),
+                    DataCell(Text(issue.reporter ?? '')),
+                    DataCell(Text(issue.type ?? '')),
+                    DataCell(Text('${humanizeTimeAgo(issue.age)} ago')),
+                    DataCell(buildBubbles(issue.fixVersions)),
+                    DataCell(buildBubbles(issue.labels)),
+                  ],
+                );
+              }).toList(),
             ),
           ),
         ),
@@ -216,8 +202,54 @@ class ProjectDetailsState extends State<ProjectDetails> {
     }
     return res.trim().isEmpty ? 'Just now' : res.trim();
   }
-  
+
   void onIssuePressed(JiraIssue issue) {
     jiraService.openIssue(issue.key);
+  }
+
+  Widget buildBubbles(List<String> items) {
+    // Calculate trimSize based on available space
+    int trimSize = 10; // Default value
+    final double maxWidth = MediaQuery.of(context).size.width;
+    // Estimate: allow ~60px per chip, minus padding, for up to 8 chips per row
+    if (items.isNotEmpty) {
+      int maxChipsPerRow = (maxWidth / 60).floor();
+      // Adjust trimSize so all chips fit in a row, min 3 chars
+      trimSize = ((maxWidth / (items.length > maxChipsPerRow ? maxChipsPerRow : items.length)) / 8).floor();
+      if (trimSize < 3) trimSize = 3;
+      if (trimSize > 15) trimSize = 15;
+    }
+    return Tooltip(
+      message: items.join(', '),
+      child: Wrap(
+        spacing: 4,
+        runSpacing: 4,
+        children: items.map((item) {          
+            return Chip(
+            backgroundColor: colorForString(item),
+            label: Text(
+              item.length > trimSize ? item.substring(0, trimSize) : item,
+              style: const TextStyle(fontSize: 10),
+            ),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+            labelPadding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+            // You can also reduce the side and shape if needed:
+            // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            );
+        }).toList(),
+      ),
+    );
+  }
+
+  // Ensure generated colors are bright for black text visibility
+  Color colorForString(String input) {
+    final hash = input.codeUnits.fold(0, (prev, elem) => prev + elem);
+    // Generate RGB values in the upper range for brightness
+    final r = 180 + (hash * 123) % 75; // 180..254
+    final g = 180 + (hash * 456) % 75;
+    final b = 180 + (hash * 789) % 75;
+    return Color.fromARGB(255, r, g, b);
   }
 }
