@@ -52,7 +52,7 @@ class JiraIssue {
     var issueLinks = issue.fields?['issuelinks'] as List<dynamic>?;
     if (issueLinks != null) {
       for (var link in issueLinks) {        
-        var type = link['type']?['name'] as String?;        
+        var type = link['type']?['outward'] as String?;        
         var outward = link['outwardIssue'];
         var inward = link['inwardIssue'];
 
